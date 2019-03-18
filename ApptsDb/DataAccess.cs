@@ -91,12 +91,6 @@ namespace ApptsDb
                     context.Entry(cust.address.city).State = cust.address.city.cityId == 0 ? EntityState.Added : EntityState.Modified;
                     context.Entry(cust.address.city.country).State = cust.address.city.country.countryId == 0 ? EntityState.Added : EntityState.Modified;
 
-                    foreach (var entity in context.ChangeTracker.Entries())
-                    {
-                        Console.WriteLine("{0}: {1}", entity.Entity.GetType().Name, entity.State);
-                    }
-                    //context.customers.Add(cust);
-
                     context.SaveChanges();
                 }
             }
@@ -112,9 +106,28 @@ namespace ApptsDb
             {
                 using (apptsEntities context = new apptsEntities())
                 {
-                    context.appointments.Add(appt);
-                    context.Entry(appt).State = appt.appointmentId == 0 ? EntityState.Added : EntityState.Modified;
-                    context.Entry(appt.customer).State = appt.customerId == 0 ? EntityState.Added : EntityState.Modified;
+                    //the db is not set up to cascade changes on foreign keys so if the user modifies the chosen customer for an
+                    //existing appointment, we have to remove the saved appointment and save a new one with the new cust.
+                    if(appt.appointmentId != 0)
+                    {
+                        appointment savedAppt = GetAppointmentById(appt.appointmentId);
+
+                        if(appt.customer.customerId != savedAppt.customerId)
+                        {
+                            DeleteAppointment(savedAppt.appointmentId);
+                            context.Entry(appt).State = EntityState.Added;
+                            context.Entry(appt.customer).State = appt.customer.customerId == 0 ? EntityState.Added : EntityState.Modified;
+                        }
+                        else
+                        {
+                            context.Entry(appt).State = EntityState.Modified;
+                        }
+                    }
+                    else
+                    {
+                        context.Entry(appt).State = EntityState.Added;
+                        context.Entry(appt.customer).State = appt.customer.customerId == 0 ? EntityState.Added : EntityState.Modified;
+                    }
 
                     context.SaveChanges();
                 }
