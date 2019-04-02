@@ -278,7 +278,7 @@ namespace ScheduleIt
             switch (reportId)
             {
                 case 0:
-                    query = "SELECT date_format(start, '%M') as 'Month', type, COUNT(*) as 'Count' FROM appointment GROUP BY month, type ORDER BY month";
+                    query = "SELECT date_format(start, '%M') as 'Month', type as 'Type', COUNT(*) as 'Count' FROM appointment GROUP BY month, type ORDER BY month";
                     break;
                 case 1:
                     query = "SELECT u.userName as 'Consultant', c.customerName as 'Customer', date_format(a.start, '%M') AS 'Month', date_format(a.start, '%a the %D') AS 'Day', date_format(a.start, '%l:%i %p') AS 'Time', concat(timestampdiff(MINUTE, a.start, a.end), ' Minutes') AS 'Length' FROM appointment a, user u, customer c WHERE a.start > now() AND a.customerId = c.customerId ORDER BY u.userName, a.start";
